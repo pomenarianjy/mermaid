@@ -17,27 +17,28 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0b1d3a;
+            /* Undersea fallback background */
+            background: linear-gradient(to bottom, #1a4a6e, #071f33, #020c14);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         #game-container {
             position: relative;
             width: 100%;
             height: 100%;
-            max-width: 1200px;
-            max-height: 900px;
+            max-width: 1400px;
+            max-height: 1000px;
             margin: auto;
             top: 50%;
             transform: translateY(-50%);
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
+            box-shadow: 0 0 40px rgba(0, 150, 255, 0.4);
             overflow: hidden;
             border: 4px solid #1e3c72;
-            background-color: #000;
+            background-color: #071f33;
         }
-        @media (max-width: 1200px), (max-height: 900px) {
+        @media (max-width: 1400px), (max-height: 1000px) {
             #game-container {
                 max-width: 100%;
                 max-height: 100%;
@@ -60,7 +61,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #000;
+            background-color: #071f33;
             z-index: 10;
         }
         .hidden {
@@ -71,7 +72,7 @@
             padding: 15px 40px;
             font-size: 24px;
             color: #ffffff;
-            background: transparent;
+            background: rgba(0, 0, 0, 0.6);
             border: 3px solid #00f3ff;
             border-radius: 50px;
             cursor: pointer;
@@ -117,10 +118,10 @@
         /* Game Elements */
         #prince-wrapper {
             position: absolute;
-            width: 150px;
-            height: 150px;
-            left: calc(50% - 75px);
-            top: calc(50% - 75px);
+            width: 200px;
+            height: 200px;
+            left: calc(50% - 100px);
+            top: calc(50% - 100px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -129,28 +130,29 @@
         }
         #prince-glow {
             position: absolute;
-            width: 130px;
-            height: 130px;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 40%, rgba(0,191,255,0) 70%);
+            width: 170px;
+            height: 170px;
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(200,240,255,0.8) 30%, rgba(0,191,255,0.4) 60%, rgba(0,0,0,0) 80%);
             border-radius: 50%;
-            box-shadow: 0 0 40px #ffffff, 0 0 80px #00f3ff;
-            animation: pulseGlow 2s ease-in-out infinite alternate;
+            box-shadow: 0 0 60px #ffffff, 0 0 120px #00f3ff, 0 0 180px #00f3ff;
+            animation: pulseGlow 1.5s ease-in-out infinite alternate;
             z-index: 2;
         }
         @keyframes pulseGlow {
-            0% { transform: scale(0.9); opacity: 0.8; }
-            100% { transform: scale(1.15); opacity: 1; }
+            0% { transform: scale(0.95); opacity: 0.85; filter: brightness(1); }
+            100% { transform: scale(1.2); opacity: 1; filter: brightness(1.3); }
         }
         #prince {
             position: absolute;
-            width: 130px;
-            height: 130px;
+            width: 160px;
+            height: 160px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             transform-origin: center center;
             animation: tilt 3s ease-in-out infinite alternate;
             z-index: 3;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.8));
         }
         @keyframes tilt {
             0% { transform: rotate(-10deg); }
@@ -168,14 +170,18 @@
             transform: translate(-50%, -50%);
             -webkit-tap-highlight-color: transparent;
         }
+        .siren-medium {
+            width: 78px;
+            height: 78px;
+        }
         .siren-large {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
         }
         .red-helper {
             position: absolute;
-            width: 85px;
-            height: 85px;
+            width: 120px;
+            height: 120px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -209,24 +215,24 @@
         }
         @keyframes riseUp {
             0% { transform: translateY(0) scale(1); opacity: 0.8; }
-            100% { transform: translateY(-900px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-1000px) scale(1.5); opacity: 0; }
         }
         .heart {
             position: absolute;
             color: #ff3366;
-            font-size: 22px;
+            font-size: 26px;
             z-index: 12;
             pointer-events: none;
             animation: streamHeart 3s linear infinite;
         }
         @keyframes streamHeart {
             0% { transform: translateY(0) scale(0.5); opacity: 1; }
-            100% { transform: translateY(-300px) translateX(50px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-350px) translateX(60px) scale(1.8); opacity: 0; }
         }
         #mermaid-fly {
             position: absolute;
-            width: 90px;
-            height: 90px;
+            width: 150px;
+            height: 150px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -240,7 +246,7 @@
 <div id="game-container">
     <!-- START SCREEN -->
     <div id="start-screen" class="screen" style="background-image: url('start.png');">
-        <button id="start-btn" class="neon-btn" style="margin-top: 50vh;">Play</button>
+        <button id="start-btn" class="neon-btn" style="margin-top: 55vh;">Play</button>
     </div>
 
     <!-- GAME PLAY SCREEN -->
@@ -294,17 +300,17 @@
     const timerDisplay = document.getElementById('timer');
     const levelDisplay = document.getElementById('current-level');
 
-    // Create background floating bubbles for start screen
+    // Create background floating bubbles
     function createBackgroundBubbles() {
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 20; i++) {
             let b = document.createElement('div');
             b.classList.add('floating-bubble');
-            let size = Math.random() * 20 + 10;
+            let size = Math.random() * 25 + 10;
             b.style.width = size + 'px';
             b.style.height = size + 'px';
             b.style.left = Math.random() * 100 + '%';
             b.style.bottom = '-30px';
-            b.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            b.style.animationDuration = (Math.random() * 3 + 2) + 's';
             b.style.animationDelay = (Math.random() * 5) + 's';
             startScreen.appendChild(b);
         }
@@ -346,8 +352,8 @@
         clearEntities();
         isPlaying = true;
 
-        // Spawn immediately on level start
-        spawnSirensCount(currentLevel);
+        // Harder & faster immediate spawn counts per level
+        spawnSirensCount(currentLevel === 1 ? 2 : (currentLevel === 2 ? 4 : 6));
 
         // Timer countdown
         gameInterval = setInterval(() => {
@@ -358,16 +364,17 @@
             }
         }, 1000);
 
-        // Exact spawn rates per second: Level 1 = 1/s, Level 2 = 2/s, Level 3 = 3/s
+        // Much faster spawn rates: Level 1 = every 700ms, Level 2 = every 450ms, Level 3 = every 300ms
+        let spawnRate = currentLevel === 1 ? 700 : (currentLevel === 2 ? 450 : 300);
         spawnInterval = setInterval(() => {
-            spawnSirensCount(currentLevel);
-        }, 1000);
+            spawnSirensCount(currentLevel === 1 ? 2 : (currentLevel === 2 ? 3 : 4));
+        }, spawnRate);
 
         // Red helper spawning for levels 2 and 3
         if (currentLevel >= 2) {
             redSpawnInterval = setInterval(() => {
                 spawnRedHelper();
-            }, 10000);
+            }, 8000);
         }
 
         requestAnimationFrame(updateGameLoop);
@@ -396,8 +403,11 @@
         let img = sirenImages[imgIndex];
         sirenImageIndex++;
 
-        // Make s3 (index 2) and s4 (index 3) slightly bigger
-        if (imgIndex === 2 || imgIndex === 3) {
+        // s2 (index 1) and s7 (index 6) slightly bigger
+        // s3 (index 2) and s4 (index 3) bigger
+        if (imgIndex === 1 || imgIndex === 6) {
+            el.classList.add('siren-medium');
+        } else if (imgIndex === 2 || imgIndex === 3) {
             el.classList.add('siren-large');
         }
 
@@ -421,9 +431,9 @@
             y: y,
             type: 'siren',
             angle: angle,
-            speed: 1.0 + (currentLevel * 0.3),
+            speed: 1.8 + (currentLevel * 0.7), // Increased speed across all levels
             wobble: Math.random() * 10,
-            wobbleSpeed: 0.05 + Math.random() * 0.05
+            wobbleSpeed: 0.08 + Math.random() * 0.08
         };
 
         el.addEventListener('click', (e) => {
@@ -447,8 +457,8 @@
         el.style.backgroundImage = `url('red.png')`;
 
         let containerRect = gameScreen.getBoundingClientRect();
-        let x = Math.random() * (containerRect.width - 150) + 75;
-        let y = Math.random() * (containerRect.height - 150) + 75;
+        let x = Math.random() * (containerRect.width - 200) + 100;
+        let y = Math.random() * (containerRect.height - 200) + 100;
 
         el.style.left = x + 'px';
         el.style.top = y + 'px';
@@ -552,7 +562,7 @@
                 let dy = cy - entity.y;
                 let dist = Math.hypot(dx, dy);
 
-                if (dist < 35) {
+                if (dist < 40) {
                     gameOver();
                     return;
                 }
@@ -576,9 +586,15 @@
     function gameOver() {
         isPlaying = false;
         clearEntities();
-        alert('Oh no! The siren reached the prince! Try again.');
+        
+        // Themed failure popup / restart current level
+        let failedLevel = currentLevel;
+        let msg = `Oh no! The sirens reached the prince on Level ${failedLevel}!\nClick OK to retry Level ${failedLevel}.`;
+        alert(msg);
+        
         gameScreen.classList.add('hidden');
-        startScreen.classList.remove('hidden');
+        gameScreen.classList.remove('hidden');
+        initLevel(failedLevel);
     }
 
     function winLevel() {
@@ -604,13 +620,13 @@
         mermaid.style.backgroundImage = "url('mermaid.png')";
         screen.appendChild(mermaid);
 
-        let mX = 50, mY = 50, mSpeedX = 2, mSpeedY = 1.5;
+        let mX = 50, mY = 50, mSpeedX = 2.5, mSpeedY = 2;
         
         let moveAnim = setInterval(() => {
             mX += mSpeedX;
             mY += mSpeedY;
-            if (mX <= 0 || mX >= screen.clientWidth - 90) mSpeedX *= -1;
-            if (mY <= 0 || mY >= screen.clientHeight - 200) mSpeedY *= -1;
+            if (mX <= 0 || mX >= screen.clientWidth - 150) mSpeedX *= -1;
+            if (mY <= 0 || mY >= screen.clientHeight - 250) mSpeedY *= -1;
             mermaid.style.left = mX + 'px';
             mermaid.style.top = mY + 'px';
         }, 30);
@@ -620,8 +636,8 @@
                 let heart = document.createElement('div');
                 heart.classList.add('heart');
                 heart.innerHTML = '💙';
-                heart.style.left = (mX + 40) + 'px';
-                heart.style.top = (mY + 40) + 'px';
+                heart.style.left = (mX + 60) + 'px';
+                heart.style.top = (mY + 60) + 'px';
                 screen.appendChild(heart);
                 setTimeout(() => heart.remove(), 3000);
             } else {
@@ -629,7 +645,7 @@
                 clearInterval(moveAnim);
                 mermaid.remove();
             }
-        }, 600);
+        }, 500);
     }
 </script>
 
