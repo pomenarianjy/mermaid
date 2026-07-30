@@ -93,6 +93,17 @@
             0% { box-shadow: 0 0 10px #00f3ff, inset 0 0 10px #00f3ff; }
             100% { box-shadow: 0 0 25px #00f3ff, inset 0 0 25px #00f3ff, 0 0 40px #00f3ff; }
         }
+        /* Congrats Title */
+        .congrats-title {
+            font-size: 50px;
+            color: #ffffff;
+            text-shadow: 0 0 15px #00f3ff, 0 0 30px #00f3ff, 0 0 45px #00f3ff;
+            margin: 0;
+            z-index: 20;
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
         /* HUD */
         #hud {
             position: absolute;
@@ -227,6 +238,8 @@
             0% { transform: translateY(0) scale(1); opacity: 0.8; }
             100% { transform: translateY(-1000px) scale(1.5); opacity: 0; }
         }
+        
+        /* Hearts */
         .heart {
             position: absolute;
             color: #ffffff;
@@ -236,10 +249,29 @@
             text-shadow: 0 0 8px #00f3ff, 0 0 15px #ffffff;
             animation: streamHeart 2.5s ease-out infinite;
         }
+        .big-heart {
+            font-size: 42px !important;
+            text-shadow: 0 0 12px #00f3ff, 0 0 25px #ffffff;
+        }
         @keyframes streamHeart {
             0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
             100% { transform: translate(-80px, -120px) scale(1.4); opacity: 0; }
         }
+        
+        /* Level 3 Heart Streams */
+        @keyframes streamHeart1 {
+            0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-150px, -120px) scale(1.4) rotate(-20deg); opacity: 0; }
+        }
+        @keyframes streamHeart2 {
+            0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-200px, 0px) scale(1.4) rotate(-45deg); opacity: 0; }
+        }
+        @keyframes streamHeart3 {
+            0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-120px, 120px) scale(1.4) rotate(20deg); opacity: 0; }
+        }
+
         #mermaid-fly {
             position: absolute;
             width: 600px;
@@ -338,7 +370,8 @@
 
     <!-- CONGRATS 3 SCREEN -->
     <div id="congrats3-screen" class="screen hidden" style="background-image: url('congrats3.png');">
-        <button id="restart-btn" class="neon-btn" style="margin-top: 55vh;">Play Again</button>
+        <h1 class="congrats-title" style="margin-top: 45vh; margin-bottom: 20px;">Congratulations!</h1>
+        <button id="restart-btn" class="neon-btn">Play Again</button>
     </div>
 
     <!-- THEMED RESTART MODAL -->
@@ -438,7 +471,8 @@
         clearEntities();
         isPlaying = true;
 
-        spawnSirensCount(currentLevel === 1 ? 1 : (currentLevel === 2 ? 2 : 2));
+        // Added more sirens back for level 3 start
+        spawnSirensCount(currentLevel === 3 ? 2 : (currentLevel === 2 ? 2 : 1));
 
         gameInterval = setInterval(() => {
             timerValue--;
@@ -448,10 +482,10 @@
             }
         }, 1000);
 
-        // Level 3 siren spawn rate made easier/slower
-        let spawnRate = currentLevel === 1 ? 1200 : (currentLevel === 2 ? 800 : 700);
+        // Level 3 siren spawn rate made slightly faster again for added difficulty
+        let spawnRate = currentLevel === 1 ? 1200 : (currentLevel === 2 ? 800 : 550);
         spawnInterval = setInterval(() => {
-            spawnSirensCount(1);
+            spawnSirensCount(currentLevel === 3 ? 2 : 1);
         }, spawnRate);
 
         if (currentLevel >= 2) {
@@ -787,17 +821,17 @@
 
         if (currentLevel === 1) {
             congrats1Screen.classList.remove('hidden');
-            setupCongratsScreen(congrats1Screen);
+            setupCongratsScreen(congrats1Screen, false);
         } else if (currentLevel === 2) {
             congrats2Screen.classList.remove('hidden');
-            setupCongratsScreen(congrats2Screen);
+            setupCongratsScreen(congrats2Screen, false);
         } else if (currentLevel === 3) {
             congrats3Screen.classList.remove('hidden');
-            setupCongratsScreen(congrats3Screen);
+            setupCongratsScreen(congrats3Screen, true);
         }
     }
 
-    function setupCongratsScreen(screen) {
+    function setupCongratsScreen(screen, isFinalLevel) {
         let mermaid = document.createElement('div');
         mermaid.id = 'mermaid-fly';
         mermaid.style.backgroundImage = "url('mermaid.png')";
@@ -816,14 +850,28 @@
 
         let heartInterval = setInterval(() => {
             if (!screen.classList.contains('hidden')) {
-                let heart = document.createElement('div');
-                heart.classList.add('heart');
-                heart.innerHTML = '🤍';
-                // Spawn delicate white hearts precisely from mermaid's left hand position relative to center
-                heart.style.left = (mX - 110) + 'px';
-                heart.style.top = (mY - 30) + 'px';
-                screen.appendChild(heart);
-                setTimeout(() => heart.remove(), 2500);
+                if (isFinalLevel) {
+                    // Final level: 3 streams of bigger hearts in different directions
+                    for (let i = 1; i <= 3; i++) {
+                        let heart = document.createElement('div');
+                        heart.classList.add('heart', 'big-heart');
+                        heart.style.animation = `streamHeart${i} 2.5s ease-out infinite`;
+                        heart.innerHTML = '🤍';
+                        heart.style.left = (mX - 110) + 'px';
+                        heart.style.top = (mY - 30) + 'px';
+                        screen.appendChild(heart);
+                        setTimeout(() => heart.remove(), 2500);
+                    }
+                } else {
+                    // Normal levels: 1 stream of delicate hearts
+                    let heart = document.createElement('div');
+                    heart.classList.add('heart');
+                    heart.innerHTML = '🤍';
+                    heart.style.left = (mX - 110) + 'px';
+                    heart.style.top = (mY - 30) + 'px';
+                    screen.appendChild(heart);
+                    setTimeout(() => heart.remove(), 2500);
+                }
             } else {
                 clearInterval(heartInterval);
                 clearInterval(moveAnim);
