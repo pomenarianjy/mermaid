@@ -17,7 +17,6 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            /* Undersea fallback background */
             background: linear-gradient(to bottom, #1a4a6e, #071f33, #020c14);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -115,32 +114,28 @@
             z-index: 5;
             pointer-events: none;
         }
+        #lives-indicator {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            font-size: 20px;
+            color: #ff4466;
+            text-shadow: 2px 2px 4px #000;
+            z-index: 5;
+            pointer-events: none;
+        }
         /* Game Elements */
         #prince-wrapper {
             position: absolute;
-            width: 200px;
-            height: 200px;
-            left: calc(50% - 100px);
-            top: calc(50% - 100px);
+            width: 160px;
+            height: 160px;
+            left: calc(50% - 80px);
+            top: calc(50% - 80px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 3;
             pointer-events: none;
-        }
-        #prince-glow {
-            position: absolute;
-            width: 170px;
-            height: 170px;
-            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(200,240,255,0.8) 30%, rgba(0,191,255,0.4) 60%, rgba(0,0,0,0) 80%);
-            border-radius: 50%;
-            box-shadow: 0 0 60px #ffffff, 0 0 120px #00f3ff, 0 0 180px #00f3ff;
-            animation: pulseGlow 1.5s ease-in-out infinite alternate;
-            z-index: 2;
-        }
-        @keyframes pulseGlow {
-            0% { transform: scale(0.95); opacity: 0.85; filter: brightness(1); }
-            100% { transform: scale(1.2); opacity: 1; filter: brightness(1.3); }
         }
         #prince {
             position: absolute;
@@ -152,7 +147,8 @@
             transform-origin: center center;
             animation: tilt 3s ease-in-out infinite alternate;
             z-index: 3;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.8));
+            /* Strong white neon contour matching image shape without circular container box */
+            filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 16px #ffffff) drop-shadow(0 0 25px #00f3ff) drop-shadow(0 0 40px #00f3ff);
         }
         @keyframes tilt {
             0% { transform: rotate(-10deg); }
@@ -239,6 +235,62 @@
             z-index: 11;
             pointer-events: none;
         }
+        /* Warning message banner */
+        #warning-banner {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 10px 25px;
+            font-size: 22px;
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+            box-shadow: 0 0 15px #ff0000;
+            z-index: 15;
+            pointer-events: none;
+            display: none;
+            animation: flashWarning 0.5s ease infinite alternate;
+        }
+        @keyframes flashWarning {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        /* Themed Modal Overlay */
+        #modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 31, 51, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-box {
+            background: linear-gradient(135deg, #103c6b, #05192d);
+            border: 3px solid #00f3ff;
+            border-radius: 20px;
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-box h2 {
+            color: #00f3ff;
+            margin-top: 0;
+            font-size: 28px;
+            text-shadow: 0 0 10px #00f3ff;
+        }
+        .modal-box p {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
     </style>
 </head>
 <body>
@@ -252,9 +304,10 @@
     <!-- GAME PLAY SCREEN -->
     <div id="game-screen" class="screen hidden" style="background-image: url('Background.png');">
         <div id="level-indicator">Level: <span id="current-level">1</span></div>
+        <div id="lives-indicator">Lives: <span id="lives-count">3</span></div>
         <div id="hud">Time: <span id="timer">60</span>s</div>
+        <div id="warning-banner">⚠️ Prince Attacked! ⚠️</div>
         <div id="prince-wrapper">
-            <div id="prince-glow"></div>
             <div id="prince" style="background-image: url('prince.png');"></div>
         </div>
     </div>
@@ -273,21 +326,30 @@
     <div id="congrats3-screen" class="screen hidden" style="background-image: url('congrats3.png');">
         <button id="restart-btn" class="neon-btn" style="margin-top: 55vh;">Play Again</button>
     </div>
+
+    <!-- THEMED RESTART MODAL -->
+    <div id="modal-overlay" class="hidden">
+        <div class="modal-box">
+            <h2>🧜‍♀️ Mermaid's Alert 🧜‍♂️</h2>
+            <p id="modal-text">The sirens got too close! Try this level again.</p>
+            <button id="modal-restart-btn" class="neon-btn" style="font-size: 18px; padding: 10px 25px;">Retry Level</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Game Assets & State variables
     const sirenImages = ['s1.png', 's2.png', 's3.png', 's4.png', 's5.png', 's6.png', 's7.png', 's8.png'];
     let currentLevel = 1;
     let timerValue = 60;
+    let playerLives = 3;
     let gameInterval = null;
     let spawnInterval = null;
     let redSpawnInterval = null;
     let gameEntities = [];
     let isPlaying = false;
     let sirenImageIndex = 0;
+    let warningTimeout = null;
 
-    const container = document.getElementById('game-container');
     const startScreen = document.getElementById('start-screen');
     const gameScreen = document.getElementById('game-screen');
     const congrats1Screen = document.getElementById('congrats1-screen');
@@ -299,8 +361,12 @@
     const restartBtn = document.getElementById('restart-btn');
     const timerDisplay = document.getElementById('timer');
     const levelDisplay = document.getElementById('current-level');
+    const livesDisplay = document.getElementById('lives-count');
+    const warningBanner = document.getElementById('warning-banner');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalRestartBtn = document.getElementById('modal-restart-btn');
 
-    // Create background floating bubbles
+    // Create background bubbles
     function createBackgroundBubbles() {
         for (let i = 0; i < 20; i++) {
             let b = document.createElement('div');
@@ -317,7 +383,6 @@
     }
     createBackgroundBubbles();
 
-    // Start Game Actions
     startBtn.addEventListener('click', () => {
         startScreen.classList.add('hidden');
         gameScreen.classList.remove('hidden');
@@ -341,9 +406,18 @@
         startScreen.classList.remove('hidden');
     });
 
+    modalRestartBtn.addEventListener('click', () => {
+        modalOverlay.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        initLevel(currentLevel);
+    });
+
     function initLevel(level) {
         currentLevel = level;
         levelDisplay.textContent = currentLevel;
+        playerLives = 3;
+        livesDisplay.textContent = playerLives;
+
         if (currentLevel === 1) timerValue = 60;
         else if (currentLevel === 2) timerValue = 90;
         else if (currentLevel === 3) timerValue = 90;
@@ -352,10 +426,9 @@
         clearEntities();
         isPlaying = true;
 
-        // Harder & faster immediate spawn counts per level
-        spawnSirensCount(currentLevel === 1 ? 2 : (currentLevel === 2 ? 4 : 6));
+        // Easier balancing for all levels
+        spawnSirensCount(currentLevel === 1 ? 1 : (currentLevel === 2 ? 2 : 3));
 
-        // Timer countdown
         gameInterval = setInterval(() => {
             timerValue--;
             timerDisplay.textContent = timerValue;
@@ -364,17 +437,16 @@
             }
         }, 1000);
 
-        // Much faster spawn rates: Level 1 = every 700ms, Level 2 = every 450ms, Level 3 = every 300ms
-        let spawnRate = currentLevel === 1 ? 700 : (currentLevel === 2 ? 450 : 300);
+        // Easier spawn rates across all levels
+        let spawnRate = currentLevel === 1 ? 1200 : (currentLevel === 2 ? 800 : 550);
         spawnInterval = setInterval(() => {
-            spawnSirensCount(currentLevel === 1 ? 2 : (currentLevel === 2 ? 3 : 4));
+            spawnSirensCount(currentLevel === 3 ? 2 : 1);
         }, spawnRate);
 
-        // Red helper spawning for levels 2 and 3
         if (currentLevel >= 2) {
             redSpawnInterval = setInterval(() => {
                 spawnRedHelper();
-            }, 8000);
+            }, 10000);
         }
 
         requestAnimationFrame(updateGameLoop);
@@ -403,8 +475,6 @@
         let img = sirenImages[imgIndex];
         sirenImageIndex++;
 
-        // s2 (index 1) and s7 (index 6) slightly bigger
-        // s3 (index 2) and s4 (index 3) bigger
         if (imgIndex === 1 || imgIndex === 6) {
             el.classList.add('siren-medium');
         } else if (imgIndex === 2 || imgIndex === 3) {
@@ -431,9 +501,9 @@
             y: y,
             type: 'siren',
             angle: angle,
-            speed: 1.8 + (currentLevel * 0.7), // Increased speed across all levels
+            speed: 1.2 + (currentLevel * 0.4),
             wobble: Math.random() * 10,
-            wobbleSpeed: 0.08 + Math.random() * 0.08
+            wobbleSpeed: 0.05 + Math.random() * 0.05
         };
 
         el.addEventListener('click', (e) => {
@@ -562,9 +632,11 @@
                 let dy = cy - entity.y;
                 let dist = Math.hypot(dx, dy);
 
-                if (dist < 40) {
-                    gameOver();
-                    return;
+                if (dist < 45) {
+                    eliminateEntity(entity);
+                    handlePrinceHit();
+                    if (!isPlaying) return;
+                    continue;
                 }
 
                 let baseAngle = Math.atan2(dy, dx);
@@ -583,18 +655,23 @@
         }
     }
 
-    function gameOver() {
-        isPlaying = false;
-        clearEntities();
-        
-        // Themed failure popup / restart current level
-        let failedLevel = currentLevel;
-        let msg = `Oh no! The sirens reached the prince on Level ${failedLevel}!\nClick OK to retry Level ${failedLevel}.`;
-        alert(msg);
-        
-        gameScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        initLevel(failedLevel);
+    function handlePrinceHit() {
+        playerLives--;
+        livesDisplay.textContent = playerLives;
+
+        // Show warning banner
+        warningBanner.style.display = 'block';
+        clearTimeout(warningTimeout);
+        warningTimeout = setTimeout(() => {
+            warningBanner.style.display = 'none';
+        }, 1200);
+
+        if (playerLives <= 0) {
+            isPlaying = false;
+            clearEntities();
+            gameScreen.classList.add('hidden');
+            modalOverlay.classList.remove('hidden');
+        }
     }
 
     function winLevel() {
