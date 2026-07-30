@@ -24,18 +24,20 @@
             position: relative;
             width: 100%;
             height: 100%;
-            max-width: 1024px;
-            max-height: 768px;
+            max-width: 1200px;
+            max-height: 900px;
             margin: auto;
             top: 50%;
             transform: translateY(-50%);
-            background-size: cover;
+            background-size: contain;
+            background-repeat: no-repeat;
             background-position: center;
             box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
             overflow: hidden;
             border: 4px solid #1e3c72;
+            background-color: #000;
         }
-        @media (max-width: 1024px), (max-height: 768px) {
+        @media (max-width: 1200px), (max-height: 900px) {
             #game-container {
                 max-width: 100%;
                 max-height: 100%;
@@ -55,8 +57,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-size: cover;
+            background-size: contain;
+            background-repeat: no-repeat;
             background-position: center;
+            background-color: #000;
             z-index: 10;
         }
         .hidden {
@@ -111,19 +115,42 @@
             pointer-events: none;
         }
         /* Game Elements */
+        #prince-wrapper {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            left: calc(50% - 75px);
+            top: calc(50% - 75px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            pointer-events: none;
+        }
+        #prince-glow {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 40%, rgba(0,191,255,0) 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ffffff, 0 0 80px #00f3ff;
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+            z-index: 2;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
         #prince {
             position: absolute;
-            width: 110px;
-            height: 110px;
-            left: calc(50% - 55px);
-            top: calc(50% - 55px);
+            width: 130px;
+            height: 130px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             transform-origin: center center;
             animation: tilt 3s ease-in-out infinite alternate;
             z-index: 3;
-            pointer-events: none;
         }
         @keyframes tilt {
             0% { transform: rotate(-10deg); }
@@ -141,10 +168,14 @@
             transform: translate(-50%, -50%);
             -webkit-tap-highlight-color: transparent;
         }
+        .siren-large {
+            width: 80px;
+            height: 80px;
+        }
         .red-helper {
             position: absolute;
-            width: 75px;
-            height: 75px;
+            width: 85px;
+            height: 85px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -178,7 +209,7 @@
         }
         @keyframes riseUp {
             0% { transform: translateY(0) scale(1); opacity: 0.8; }
-            100% { transform: translateY(-800px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-900px) scale(1.5); opacity: 0; }
         }
         .heart {
             position: absolute;
@@ -209,29 +240,32 @@
 <div id="game-container">
     <!-- START SCREEN -->
     <div id="start-screen" class="screen" style="background-image: url('start.png');">
-        <button id="start-btn" class="neon-btn">Play</button>
+        <button id="start-btn" class="neon-btn" style="margin-top: 50vh;">Play</button>
     </div>
 
     <!-- GAME PLAY SCREEN -->
     <div id="game-screen" class="screen hidden" style="background-image: url('Background.png');">
         <div id="level-indicator">Level: <span id="current-level">1</span></div>
         <div id="hud">Time: <span id="timer">60</span>s</div>
-        <div id="prince" style="background-image: url('prince.png');"></div>
+        <div id="prince-wrapper">
+            <div id="prince-glow"></div>
+            <div id="prince" style="background-image: url('prince.png');"></div>
+        </div>
     </div>
 
     <!-- CONGRATS 1 SCREEN -->
     <div id="congrats1-screen" class="screen hidden" style="background-image: url('congrats1.png');">
-        <button id="next-btn-1" class="neon-btn" style="margin-top: 350px;">Next Level</button>
+        <button id="next-btn-1" class="neon-btn" style="margin-top: 55vh;">Next Level</button>
     </div>
 
     <!-- CONGRATS 2 SCREEN -->
     <div id="congrats2-screen" class="screen hidden" style="background-image: url('congrats2.png');">
-        <button id="next-btn-2" class="neon-btn" style="margin-top: 350px;">Next Level</button>
+        <button id="next-btn-2" class="neon-btn" style="margin-top: 55vh;">Next Level</button>
     </div>
 
     <!-- CONGRATS 3 SCREEN -->
     <div id="congrats3-screen" class="screen hidden" style="background-image: url('congrats3.png');">
-        <button id="restart-btn" class="neon-btn" style="margin-top: 350px;">Play Again</button>
+        <button id="restart-btn" class="neon-btn" style="margin-top: 55vh;">Play Again</button>
     </div>
 </div>
 
@@ -358,8 +392,15 @@
         let el = document.createElement('div');
         el.classList.add('siren');
         
-        let img = sirenImages[sirenImageIndex % sirenImages.length];
+        let imgIndex = sirenImageIndex % sirenImages.length;
+        let img = sirenImages[imgIndex];
         sirenImageIndex++;
+
+        // Make s3 (index 2) and s4 (index 3) slightly bigger
+        if (imgIndex === 2 || imgIndex === 3) {
+            el.classList.add('siren-large');
+        }
+
         el.style.backgroundImage = `url('${img}')`;
 
         let containerRect = gameScreen.getBoundingClientRect();
