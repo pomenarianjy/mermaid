@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Little Mermaid’s Prince</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
         body, html {
             margin: 0;
@@ -22,8 +24,8 @@
             position: relative;
             width: 100%;
             height: 100%;
-            max-width: 800px;
-            max-height: 600px;
+            max-width: 1024px;
+            max-height: 768px;
             margin: auto;
             top: 50%;
             transform: translateY(-50%);
@@ -32,6 +34,16 @@
             box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
             overflow: hidden;
             border: 4px solid #1e3c72;
+        }
+        @media (max-width: 1024px), (max-height: 768px) {
+            #game-container {
+                max-width: 100%;
+                max-height: 100%;
+                height: 100%;
+                border: none;
+                top: 0;
+                transform: none;
+            }
         }
         .screen {
             position: absolute;
@@ -66,8 +78,9 @@
             animation: shine 1.5s infinite alternate;
             transition: all 0.3s ease;
             z-index: 20;
+            -webkit-tap-highlight-color: transparent;
         }
-        .neon-btn:hover {
+        .neon-btn:hover, .neon-btn:active {
             background: #00f3ff;
             color: #000;
             box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
@@ -100,10 +113,10 @@
         /* Game Elements */
         #prince {
             position: absolute;
-            width: 100px;
-            height: 100px;
-            left: calc(50% - 50px);
-            top: calc(50% - 50px);
+            width: 110px;
+            height: 110px;
+            left: calc(50% - 55px);
+            top: calc(50% - 55px);
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -118,25 +131,27 @@
         }
         .siren {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             cursor: pointer;
             z-index: 4;
             transform: translate(-50%, -50%);
+            -webkit-tap-highlight-color: transparent;
         }
         .red-helper {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             cursor: pointer;
             z-index: 4;
             animation: floatAround 4s ease-in-out infinite alternate;
+            -webkit-tap-highlight-color: transparent;
         }
         @keyframes floatAround {
             0% { transform: translate(0, 0) scale(1); }
@@ -163,7 +178,7 @@
         }
         @keyframes riseUp {
             0% { transform: translateY(0) scale(1); opacity: 0.8; }
-            100% { transform: translateY(-700px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-800px) scale(1.5); opacity: 0; }
         }
         .heart {
             position: absolute;
@@ -262,7 +277,7 @@
     }
     createBackgroundBubbles();
 
-    // Start Game Action
+    // Start Game Actions
     startBtn.addEventListener('click', () => {
         startScreen.classList.add('hidden');
         gameScreen.classList.remove('hidden');
@@ -297,6 +312,9 @@
         clearEntities();
         isPlaying = true;
 
+        // Spawn immediately on level start
+        spawnSirensCount(currentLevel);
+
         // Timer countdown
         gameInterval = setInterval(() => {
             timerValue--;
@@ -306,14 +324,10 @@
             }
         }, 1000);
 
-        // Siren spawning intervals depending on level
-        let spawnRate = currentLevel === 1 ? 3000 : (currentLevel === 2 ? 2200 : 1500);
+        // Exact spawn rates per second: Level 1 = 1/s, Level 2 = 2/s, Level 3 = 3/s
         spawnInterval = setInterval(() => {
-            spawnSiren();
-            if (currentLevel === 3 && Math.random() > 0.5) {
-                spawnSiren(); // extra challenge for level 3
-            }
-        }, spawnRate);
+            spawnSirensCount(currentLevel);
+        }, 1000);
 
         // Red helper spawning for levels 2 and 3
         if (currentLevel >= 2) {
@@ -323,6 +337,12 @@
         }
 
         requestAnimationFrame(updateGameLoop);
+    }
+
+    function spawnSirensCount(count) {
+        for (let i = 0; i < count; i++) {
+            spawnSiren();
+        }
     }
 
     function clearEntities() {
@@ -338,12 +358,10 @@
         let el = document.createElement('div');
         el.classList.add('siren');
         
-        // Cycle siren images
         let img = sirenImages[sirenImageIndex % sirenImages.length];
         sirenImageIndex++;
         el.style.backgroundImage = `url('${img}')`;
 
-        // Spawn from 360 degrees brink of screen
         let containerRect = gameScreen.getBoundingClientRect();
         let cx = containerRect.width / 2;
         let cy = containerRect.height / 2;
@@ -362,7 +380,7 @@
             y: y,
             type: 'siren',
             angle: angle,
-            speed: 1.2 + (currentLevel * 0.4),
+            speed: 1.0 + (currentLevel * 0.3),
             wobble: Math.random() * 10,
             wobbleSpeed: 0.05 + Math.random() * 0.05
         };
@@ -375,7 +393,7 @@
             e.stopPropagation();
             e.preventDefault();
             eliminateEntity(entity);
-        });
+        }, { passive: false });
 
         gameScreen.appendChild(el);
         gameEntities.push(entity);
@@ -409,12 +427,11 @@
             e.stopPropagation();
             e.preventDefault();
             activateRedPower(entity);
-        });
+        }, { passive: false });
 
         gameScreen.appendChild(el);
         gameEntities.push(entity);
 
-        // Remove red automatically after 5 seconds if not clicked
         setTimeout(() => {
             if (entity.element.parentNode) {
                 entity.element.remove();
@@ -424,7 +441,6 @@
     }
 
     function activateRedPower(redEntity) {
-        // Issue bubbles and kill 3 nearest sirens
         let sirens = gameEntities.filter(e => e.type === 'siren');
         sirens.sort((a, b) => {
             let distA = Math.hypot(a.x - redEntity.x, a.y - redEntity.y);
@@ -449,7 +465,7 @@
         gameScreen.appendChild(bubble);
 
         let startTime = performance.now();
-        let duration = 500; // ms
+        let duration = 500;
 
         function animateBubble(currentTime) {
             let elapsed = currentTime - startTime;
@@ -491,13 +507,11 @@
             if (entity.type === 'siren') {
                 entity.wobble += entity.wobbleSpeed;
                 
-                // Move towards center with zigzag/curved pattern
                 let dx = cx - entity.x;
                 let dy = cy - entity.y;
                 let dist = Math.hypot(dx, dy);
 
-                if (dist < 30) {
-                    // Reached the prince! Level Failed
+                if (dist < 35) {
                     gameOver();
                     return;
                 }
@@ -544,7 +558,6 @@
     }
 
     function setupCongratsScreen(screen) {
-        // Add flying mermaid and streaming blue hearts
         let mermaid = document.createElement('div');
         mermaid.id = 'mermaid-fly';
         mermaid.style.backgroundImage = "url('mermaid.png')";
