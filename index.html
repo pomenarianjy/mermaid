@@ -130,7 +130,8 @@
             width: 160px;
             height: 160px;
             left: calc(50% - 80px);
-            top: calc(50% - 80px);
+            /* Moved slightly lower from center to avoid blocking top-center background features */
+            top: calc(50% - 30px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -147,7 +148,6 @@
             transform-origin: center center;
             animation: tilt 3s ease-in-out infinite alternate;
             z-index: 3;
-            /* Strong white neon contour matching image shape without circular container box */
             filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 16px #ffffff) drop-shadow(0 0 25px #00f3ff) drop-shadow(0 0 40px #00f3ff);
         }
         @keyframes tilt {
@@ -176,8 +176,9 @@
         }
         .red-helper {
             position: absolute;
-            width: 120px;
-            height: 120px;
+            /* red.png made 3 times bigger (120px * 3 = 360px) */
+            width: 360px;
+            height: 360px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -185,11 +186,26 @@
             z-index: 4;
             animation: floatAround 4s ease-in-out infinite alternate;
             -webkit-tap-highlight-color: transparent;
+            transform: translate(-50%, -50%);
+        }
+        .prince1-helper {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 4;
+            animation: floatAround 4s ease-in-out infinite alternate;
+            -webkit-tap-highlight-color: transparent;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 15px #ffffff) drop-shadow(0 0 30px #00f3ff);
         }
         @keyframes floatAround {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, -40px) scale(1.1); }
-            100% { transform: translate(-30px, 30px) scale(0.95); }
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) translate(20px, -20px) scale(1.05); }
+            100% { transform: translate(-50%, -50%) translate(-20px, 20px) scale(0.95); }
         }
         .bubble {
             position: absolute;
@@ -227,13 +243,15 @@
         }
         #mermaid-fly {
             position: absolute;
-            width: 150px;
-            height: 150px;
+            /* mermaid.png made 4 times bigger (150px * 4 = 600px) */
+            width: 600px;
+            height: 600px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             z-index: 11;
             pointer-events: none;
+            transform: translate(-50%, -50%);
         }
         /* Warning message banner */
         #warning-banner {
@@ -345,6 +363,7 @@
     let gameInterval = null;
     let spawnInterval = null;
     let redSpawnInterval = null;
+    let prince1SpawnInterval = null;
     let gameEntities = [];
     let isPlaying = false;
     let sirenImageIndex = 0;
@@ -366,7 +385,6 @@
     const modalOverlay = document.getElementById('modal-overlay');
     const modalRestartBtn = document.getElementById('modal-restart-btn');
 
-    // Create background bubbles
     function createBackgroundBubbles() {
         for (let i = 0; i < 20; i++) {
             let b = document.createElement('div');
@@ -426,7 +444,6 @@
         clearEntities();
         isPlaying = true;
 
-        // Easier balancing for all levels
         spawnSirensCount(currentLevel === 1 ? 1 : (currentLevel === 2 ? 2 : 3));
 
         gameInterval = setInterval(() => {
@@ -437,7 +454,6 @@
             }
         }, 1000);
 
-        // Easier spawn rates across all levels
         let spawnRate = currentLevel === 1 ? 1200 : (currentLevel === 2 ? 800 : 550);
         spawnInterval = setInterval(() => {
             spawnSirensCount(currentLevel === 3 ? 2 : 1);
@@ -447,6 +463,12 @@
             redSpawnInterval = setInterval(() => {
                 spawnRedHelper();
             }, 10000);
+        }
+
+        if (currentLevel === 3) {
+            prince1SpawnInterval = setInterval(() => {
+                spawnPrince1Helper();
+            }, 12000);
         }
 
         requestAnimationFrame(updateGameLoop);
@@ -462,6 +484,7 @@
         clearInterval(gameInterval);
         clearInterval(spawnInterval);
         clearInterval(redSpawnInterval);
+        clearInterval(prince1SpawnInterval);
         gameEntities.forEach(e => e.element.remove());
         gameEntities = [];
     }
@@ -527,8 +550,8 @@
         el.style.backgroundImage = `url('red.png')`;
 
         let containerRect = gameScreen.getBoundingClientRect();
-        let x = Math.random() * (containerRect.width - 200) + 100;
-        let y = Math.random() * (containerRect.height - 200) + 100;
+        let x = Math.random() * (containerRect.width - 300) + 150;
+        let y = Math.random() * (containerRect.height - 300) + 150;
 
         el.style.left = x + 'px';
         el.style.top = y + 'px';
@@ -569,13 +592,105 @@
             return distA - distB;
         });
 
-        let targets = sirens.slice(0, 3);
+        // Defeats 5 nearest sirens instead of 3
+        let targets = sirens.slice(0, 5);
         targets.forEach(target => {
             createBubbleAttack(redEntity, target);
         });
 
         redEntity.element.remove();
         gameEntities = gameEntities.filter(e => e !== redEntity);
+    }
+
+    function spawnPrince1Helper() {
+        if (!isPlaying) return;
+        let el = document.createElement('div');
+        el.classList.add('prince1-helper');
+        el.style.backgroundImage = `url('prince1.png')`;
+
+        let containerRect = gameScreen.getBoundingClientRect();
+        let x = Math.random() * (containerRect.width - 200) + 100;
+        let y = Math.random() * (containerRect.height - 200) + 100;
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+
+        let entity = {
+            element: el,
+            x: x,
+            y: y,
+            type: 'prince1'
+        };
+
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            activatePrince1Power(entity);
+        });
+        el.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            activatePrince1Power(entity);
+        }, { passive: false });
+
+        gameScreen.appendChild(el);
+        gameEntities.push(entity);
+
+        setTimeout(() => {
+            if (entity.element.parentNode) {
+                entity.element.remove();
+                gameEntities = gameEntities.filter(en => en !== entity);
+            }
+        }, 5000);
+    }
+
+    function activatePrince1Power(princeEntity) {
+        let sirens = gameEntities.filter(e => e.type === 'siren');
+        sirens.sort((a, b) => {
+            let distA = Math.hypot(a.x - princeEntity.x, a.y - princeEntity.y);
+            let distB = Math.hypot(b.x - princeEntity.x, b.y - princeEntity.y);
+            return distA - distB;
+        });
+
+        let targets = sirens.slice(0, 7);
+        
+        // Remove prince1 entity immediately
+        princeEntity.element.remove();
+        gameEntities = gameEntities.filter(e => e !== princeEntity);
+
+        // Animate suction of 7 sirens into prince1's location
+        targets.forEach(target => {
+            createSuckAnimation(target, princeEntity);
+        });
+    }
+
+    function createSuckAnimation(target, center) {
+        let startTime = performance.now();
+        let duration = 400;
+        let startX = target.x;
+        let startY = target.y;
+
+        function animateSuck(currentTime) {
+            let elapsed = currentTime - startTime;
+            let progress = Math.min(elapsed / duration, 1);
+            
+            // Ease-in acceleration suction effect towards center
+            let currentX = startX + (center.x - startX) * progress;
+            let currentY = startY + (center.y - startY) * progress;
+            let scale = 1 - progress * 0.8;
+
+            target.x = currentX;
+            target.y = currentY;
+            target.element.style.left = currentX + 'px';
+            target.element.style.top = currentY + 'px';
+            target.element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animateSuck);
+            } else {
+                eliminateEntity(target);
+            }
+        }
+        requestAnimationFrame(animateSuck);
     }
 
     function createBubbleAttack(from, to) {
@@ -621,7 +736,8 @@
 
         let containerRect = gameScreen.getBoundingClientRect();
         let cx = containerRect.width / 2;
-        let cy = containerRect.height / 2;
+        // Adjusted center Y match prince-wrapper top position
+        let cy = containerRect.height / 2 + 50;
 
         for (let i = gameEntities.length - 1; i >= 0; i--) {
             let entity = gameEntities[i];
@@ -659,7 +775,6 @@
         playerLives--;
         livesDisplay.textContent = playerLives;
 
-        // Show warning banner
         warningBanner.style.display = 'block';
         clearTimeout(warningTimeout);
         warningTimeout = setTimeout(() => {
@@ -697,13 +812,13 @@
         mermaid.style.backgroundImage = "url('mermaid.png')";
         screen.appendChild(mermaid);
 
-        let mX = 50, mY = 50, mSpeedX = 2.5, mSpeedY = 2;
+        let mX = screen.clientWidth / 2, mY = screen.clientHeight / 2, mSpeedX = 2.5, mSpeedY = 2;
         
         let moveAnim = setInterval(() => {
             mX += mSpeedX;
             mY += mSpeedY;
-            if (mX <= 0 || mX >= screen.clientWidth - 150) mSpeedX *= -1;
-            if (mY <= 0 || mY >= screen.clientHeight - 250) mSpeedY *= -1;
+            if (mX <= 250 || mX >= screen.clientWidth - 250) mSpeedX *= -1;
+            if (mY <= 250 || mY >= screen.clientHeight - 250) mSpeedY *= -1;
             mermaid.style.left = mX + 'px';
             mermaid.style.top = mY + 'px';
         }, 30);
@@ -713,8 +828,8 @@
                 let heart = document.createElement('div');
                 heart.classList.add('heart');
                 heart.innerHTML = '💙';
-                heart.style.left = (mX + 60) + 'px';
-                heart.style.top = (mY + 60) + 'px';
+                heart.style.left = mX + 'px';
+                heart.style.top = mY + 'px';
                 screen.appendChild(heart);
                 setTimeout(() => heart.remove(), 3000);
             } else {
