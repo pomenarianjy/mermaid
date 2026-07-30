@@ -283,6 +283,15 @@
             pointer-events: none;
             transform: translate(-50%, -50%);
         }
+
+        /* Mobile adaptation: make mermaid.png half as small on mobile viewports */
+        @media (max-width: 768px), (pointer: coarse) {
+            #mermaid-fly {
+                width: 300px;
+                height: 300px;
+            }
+        }
+
         #warning-banner {
             position: absolute;
             top: 25%;
@@ -465,13 +474,11 @@
         playerLives = 3;
         livesDisplay.textContent = playerLives;
 
-        // All 3 stages set to 60 seconds
         timerValue = 60;
         timerDisplay.textContent = timerValue;
         clearEntities();
         isPlaying = true;
 
-        // Added more sirens back for level 3 start
         spawnSirensCount(currentLevel === 3 ? 2 : (currentLevel === 2 ? 2 : 1));
 
         gameInterval = setInterval(() => {
@@ -482,7 +489,6 @@
             }
         }, 1000);
 
-        // Level 3 siren spawn rate made slightly faster again for added difficulty
         let spawnRate = currentLevel === 1 ? 1200 : (currentLevel === 2 ? 800 : 550);
         spawnInterval = setInterval(() => {
             spawnSirensCount(currentLevel === 3 ? 2 : 1);
@@ -621,7 +627,6 @@
             return distA - distB;
         });
 
-        // Defeats 5 nearest sirens
         let targets = sirens.slice(0, 5);
         targets.forEach(target => {
             createBubbleAttack(redEntity, target);
@@ -850,25 +855,28 @@
 
         let heartInterval = setInterval(() => {
             if (!screen.classList.contains('hidden')) {
+                // Adjust hand offset based on whether mermaid-fly is mobile-sized (300px) or desktop-sized (600px)
+                let isMobile = window.innerWidth <= 768 || window.matchMedia('(pointer: coarse)').matches;
+                let handOffsetX = isMobile ? 55 : 110;
+                let handOffsetY = isMobile ? 15 : 30;
+
                 if (isFinalLevel) {
-                    // Final level: 3 streams of bigger hearts in different directions
                     for (let i = 1; i <= 3; i++) {
                         let heart = document.createElement('div');
                         heart.classList.add('heart', 'big-heart');
                         heart.style.animation = `streamHeart${i} 2.5s ease-out infinite`;
                         heart.innerHTML = '🤍';
-                        heart.style.left = (mX - 110) + 'px';
-                        heart.style.top = (mY - 30) + 'px';
+                        heart.style.left = (mX - handOffsetX) + 'px';
+                        heart.style.top = (mY - handOffsetY) + 'px';
                         screen.appendChild(heart);
                         setTimeout(() => heart.remove(), 2500);
                     }
                 } else {
-                    // Normal levels: 1 stream of delicate hearts
                     let heart = document.createElement('div');
                     heart.classList.add('heart');
                     heart.innerHTML = '🤍';
-                    heart.style.left = (mX - 110) + 'px';
-                    heart.style.top = (mY - 30) + 'px';
+                    heart.style.left = (mX - handOffsetX) + 'px';
+                    heart.style.top = (mY - handOffsetY) + 'px';
                     screen.appendChild(heart);
                     setTimeout(() => heart.remove(), 2500);
                 }
