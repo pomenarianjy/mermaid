@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Mermaid’s Prince</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0b1d3a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 600px;
+            margin: auto;
+            top: 50%;
+            transform: translateY(-50%);
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
+            overflow: hidden;
+            border: 4px solid #1e3c72;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            z-index: 10;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Neon Button */
+        .neon-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            color: #ffffff;
+            background: transparent;
+            border: 3px solid #00f3ff;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px #00f3ff, inset 0 0 15px #00f3ff;
+            text-shadow: 0 0 10px #00f3ff;
+            animation: shine 1.5s infinite alternate;
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+        .neon-btn:hover {
+            background: #00f3ff;
+            color: #000;
+            box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
+        }
+        @keyframes shine {
+            0% { box-shadow: 0 0 10px #00f3ff, inset 0 0 10px #00f3ff; }
+            100% { box-shadow: 0 0 25px #00f3ff, inset 0 0 25px #00f3ff, 0 0 40px #00f3ff; }
+        }
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #level-indicator {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+            z-index: 5;
+            pointer-events: none;
+        }
+        /* Game Elements */
+        #prince {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            left: calc(50% - 50px);
+            top: calc(50% - 50px);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform-origin: center center;
+            animation: tilt 3s ease-in-out infinite alternate;
+            z-index: 3;
+            pointer-events: none;
+        }
+        @keyframes tilt {
+            0% { transform: rotate(-10deg); }
+            100% { transform: rotate(10deg); }
+        }
+        .siren {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 4;
+            transform: translate(-50%, -50%);
+        }
+        .red-helper {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 4;
+            animation: floatAround 4s ease-in-out infinite alternate;
+        }
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -40px) scale(1.1); }
+            100% { transform: translate(-30px, 30px) scale(0.95); }
+        }
+        .bubble {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(0,191,255,0.4));
+            border-radius: 50%;
+            box-shadow: inset 0 0 5px rgba(255,255,255,0.8), 0 0 8px rgba(0,191,255,0.6);
+            z-index: 6;
+            pointer-events: none;
+        }
+        .floating-bubble {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(0,191,255,0.3));
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: riseUp linear infinite;
+        }
+        @keyframes riseUp {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-700px) scale(1.5); opacity: 0; }
+        }
+        .heart {
+            position: absolute;
+            color: #ff3366;
+            font-size: 22px;
+            z-index: 12;
+            pointer-events: none;
+            animation: streamHeart 3s linear infinite;
+        }
+        @keyframes streamHeart {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-300px) translateX(50px) scale(1.5); opacity: 0; }
+        }
+        #mermaid-fly {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 11;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen" style="background-image: url('start.png');">
+        <button id="start-btn" class="neon-btn">Play</button>
+    </div>
+
+    <!-- GAME PLAY SCREEN -->
+    <div id="game-screen" class="screen hidden" style="background-image: url('Background.png');">
+        <div id="level-indicator">Level: <span id="current-level">1</span></div>
+        <div id="hud">Time: <span id="timer">60</span>s</div>
+        <div id="prince" style="background-image: url('prince.png');"></div>
+    </div>
+
+    <!-- CONGRATS 1 SCREEN -->
+    <div id="congrats1-screen" class="screen hidden" style="background-image: url('congrats1.png');">
+        <button id="next-btn-1" class="neon-btn" style="margin-top: 350px;">Next Level</button>
+    </div>
+
+    <!-- CONGRATS 2 SCREEN -->
+    <div id="congrats2-screen" class="screen hidden" style="background-image: url('congrats2.png');">
+        <button id="next-btn-2" class="neon-btn" style="margin-top: 350px;">Next Level</button>
+    </div>
+
+    <!-- CONGRATS 3 SCREEN -->
+    <div id="congrats3-screen" class="screen hidden" style="background-image: url('congrats3.png');">
+        <button id="restart-btn" class="neon-btn" style="margin-top: 350px;">Play Again</button>
+    </div>
+</div>
+
+<script>
+    // Game Assets & State variables
+    const sirenImages = ['s1.png', 's2.png', 's3.png', 's4.png', 's5.png', 's6.png', 's7.png', 's8.png'];
+    let currentLevel = 1;
+    let timerValue = 60;
+    let gameInterval = null;
+    let spawnInterval = null;
+    let redSpawnInterval = null;
+    let gameEntities = [];
+    let isPlaying = false;
+    let sirenImageIndex = 0;
+
+    const container = document.getElementById('game-container');
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const congrats1Screen = document.getElementById('congrats1-screen');
+    const congrats2Screen = document.getElementById('congrats2-screen');
+    const congrats3Screen = document.getElementById('congrats3-screen');
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn1 = document.getElementById('next-btn-1');
+    const nextBtn2 = document.getElementById('next-btn-2');
+    const restartBtn = document.getElementById('restart-btn');
+    const timerDisplay = document.getElementById('timer');
+    const levelDisplay = document.getElementById('current-level');
+
+    // Create background floating bubbles for start screen
+    function createBackgroundBubbles() {
+        for (let i = 0; i < 15; i++) {
+            let b = document.createElement('div');
+            b.classList.add('floating-bubble');
+            let size = Math.random() * 20 + 10;
+            b.style.width = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left = Math.random() * 100 + '%';
+            b.style.bottom = '-30px';
+            b.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            b.style.animationDelay = (Math.random() * 5) + 's';
+            startScreen.appendChild(b);
+        }
+    }
+    createBackgroundBubbles();
+
+    // Start Game Action
+    startBtn.addEventListener('click', () => {
+        startScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        initLevel(1);
+    });
+
+    nextBtn1.addEventListener('click', () => {
+        congrats1Screen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        initLevel(2);
+    });
+
+    nextBtn2.addEventListener('click', () => {
+        congrats2Screen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        initLevel(3);
+    });
+
+    restartBtn.addEventListener('click', () => {
+        congrats3Screen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+    });
+
+    function initLevel(level) {
+        currentLevel = level;
+        levelDisplay.textContent = currentLevel;
+        if (currentLevel === 1) timerValue = 60;
+        else if (currentLevel === 2) timerValue = 90;
+        else if (currentLevel === 3) timerValue = 90;
+        
+        timerDisplay.textContent = timerValue;
+        clearEntities();
+        isPlaying = true;
+
+        // Timer countdown
+        gameInterval = setInterval(() => {
+            timerValue--;
+            timerDisplay.textContent = timerValue;
+            if (timerValue <= 0) {
+                winLevel();
+            }
+        }, 1000);
+
+        // Siren spawning intervals depending on level
+        let spawnRate = currentLevel === 1 ? 3000 : (currentLevel === 2 ? 2200 : 1500);
+        spawnInterval = setInterval(() => {
+            spawnSiren();
+            if (currentLevel === 3 && Math.random() > 0.5) {
+                spawnSiren(); // extra challenge for level 3
+            }
+        }, spawnRate);
+
+        // Red helper spawning for levels 2 and 3
+        if (currentLevel >= 2) {
+            redSpawnInterval = setInterval(() => {
+                spawnRedHelper();
+            }, 10000);
+        }
+
+        requestAnimationFrame(updateGameLoop);
+    }
+
+    function clearEntities() {
+        clearInterval(gameInterval);
+        clearInterval(spawnInterval);
+        clearInterval(redSpawnInterval);
+        gameEntities.forEach(e => e.element.remove());
+        gameEntities = [];
+    }
+
+    function spawnSiren() {
+        if (!isPlaying) return;
+        let el = document.createElement('div');
+        el.classList.add('siren');
+        
+        // Cycle siren images
+        let img = sirenImages[sirenImageIndex % sirenImages.length];
+        sirenImageIndex++;
+        el.style.backgroundImage = `url('${img}')`;
+
+        // Spawn from 360 degrees brink of screen
+        let containerRect = gameScreen.getBoundingClientRect();
+        let cx = containerRect.width / 2;
+        let cy = containerRect.height / 2;
+        
+        let angle = Math.random() * Math.PI * 2;
+        let spawnDist = Math.max(containerRect.width, containerRect.height) * 0.7;
+        let x = cx + Math.cos(angle) * spawnDist;
+        let y = cy + Math.sin(angle) * spawnDist;
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+
+        let entity = {
+            element: el,
+            x: x,
+            y: y,
+            type: 'siren',
+            angle: angle,
+            speed: 1.2 + (currentLevel * 0.4),
+            wobble: Math.random() * 10,
+            wobbleSpeed: 0.05 + Math.random() * 0.05
+        };
+
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            eliminateEntity(entity);
+        });
+        el.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            eliminateEntity(entity);
+        });
+
+        gameScreen.appendChild(el);
+        gameEntities.push(entity);
+    }
+
+    function spawnRedHelper() {
+        if (!isPlaying) return;
+        let el = document.createElement('div');
+        el.classList.add('red-helper');
+        el.style.backgroundImage = `url('red.png')`;
+
+        let containerRect = gameScreen.getBoundingClientRect();
+        let x = Math.random() * (containerRect.width - 150) + 75;
+        let y = Math.random() * (containerRect.height - 150) + 75;
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+
+        let entity = {
+            element: el,
+            x: x,
+            y: y,
+            type: 'red'
+        };
+
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            activateRedPower(entity);
+        });
+        el.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            activateRedPower(entity);
+        });
+
+        gameScreen.appendChild(el);
+        gameEntities.push(entity);
+
+        // Remove red automatically after 5 seconds if not clicked
+        setTimeout(() => {
+            if (entity.element.parentNode) {
+                entity.element.remove();
+                gameEntities = gameEntities.filter(en => en !== entity);
+            }
+        }, 5000);
+    }
+
+    function activateRedPower(redEntity) {
+        // Issue bubbles and kill 3 nearest sirens
+        let sirens = gameEntities.filter(e => e.type === 'siren');
+        sirens.sort((a, b) => {
+            let distA = Math.hypot(a.x - redEntity.x, a.y - redEntity.y);
+            let distB = Math.hypot(b.x - redEntity.x, b.y - redEntity.y);
+            return distA - distB;
+        });
+
+        let targets = sirens.slice(0, 3);
+        targets.forEach(target => {
+            createBubbleAttack(redEntity, target);
+        });
+
+        redEntity.element.remove();
+        gameEntities = gameEntities.filter(e => e !== redEntity);
+    }
+
+    function createBubbleAttack(from, to) {
+        let bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+        bubble.style.left = from.x + 'px';
+        bubble.style.top = from.y + 'px';
+        gameScreen.appendChild(bubble);
+
+        let startTime = performance.now();
+        let duration = 500; // ms
+
+        function animateBubble(currentTime) {
+            let elapsed = currentTime - startTime;
+            let progress = Math.min(elapsed / duration, 1);
+            
+            let currentX = from.x + (to.x - from.x) * progress;
+            let currentY = from.y + (to.y - from.y) * progress;
+
+            bubble.style.left = currentX + 'px';
+            bubble.style.top = currentY + 'px';
+
+            if (progress < 1) {
+                requestAnimationFrame(animateBubble);
+            } else {
+                bubble.remove();
+                eliminateEntity(to);
+            }
+        }
+        requestAnimationFrame(animateBubble);
+    }
+
+    function eliminateEntity(entity) {
+        let index = gameEntities.indexOf(entity);
+        if (index > -1) {
+            entity.element.remove();
+            gameEntities.splice(index, 1);
+        }
+    }
+
+    function updateGameLoop() {
+        if (!isPlaying) return;
+
+        let containerRect = gameScreen.getBoundingClientRect();
+        let cx = containerRect.width / 2;
+        let cy = containerRect.height / 2;
+
+        for (let i = gameEntities.length - 1; i >= 0; i--) {
+            let entity = gameEntities[i];
+            if (entity.type === 'siren') {
+                entity.wobble += entity.wobbleSpeed;
+                
+                // Move towards center with zigzag/curved pattern
+                let dx = cx - entity.x;
+                let dy = cy - entity.y;
+                let dist = Math.hypot(dx, dy);
+
+                if (dist < 30) {
+                    // Reached the prince! Level Failed
+                    gameOver();
+                    return;
+                }
+
+                let baseAngle = Math.atan2(dy, dx);
+                let complexAngle = baseAngle + Math.sin(entity.wobble) * 0.8;
+
+                entity.x += Math.cos(complexAngle) * entity.speed;
+                entity.y += Math.sin(complexAngle) * entity.speed;
+
+                entity.element.style.left = entity.x + 'px';
+                entity.element.style.top = entity.y + 'px';
+            }
+        }
+
+        if (isPlaying) {
+            requestAnimationFrame(updateGameLoop);
+        }
+    }
+
+    function gameOver() {
+        isPlaying = false;
+        clearEntities();
+        alert('Oh no! The siren reached the prince! Try again.');
+        gameScreen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+    }
+
+    function winLevel() {
+        isPlaying = false;
+        clearEntities();
+        gameScreen.classList.add('hidden');
+
+        if (currentLevel === 1) {
+            congrats1Screen.classList.remove('hidden');
+            setupCongratsScreen(congrats1Screen);
+        } else if (currentLevel === 2) {
+            congrats2Screen.classList.remove('hidden');
+            setupCongratsScreen(congrats2Screen);
+        } else if (currentLevel === 3) {
+            congrats3Screen.classList.remove('hidden');
+            setupCongratsScreen(congrats3Screen);
+        }
+    }
+
+    function setupCongratsScreen(screen) {
+        // Add flying mermaid and streaming blue hearts
+        let mermaid = document.createElement('div');
+        mermaid.id = 'mermaid-fly';
+        mermaid.style.backgroundImage = "url('mermaid.png')";
+        screen.appendChild(mermaid);
+
+        let mX = 50, mY = 50, mSpeedX = 2, mSpeedY = 1.5;
+        
+        let moveAnim = setInterval(() => {
+            mX += mSpeedX;
+            mY += mSpeedY;
+            if (mX <= 0 || mX >= screen.clientWidth - 90) mSpeedX *= -1;
+            if (mY <= 0 || mY >= screen.clientHeight - 200) mSpeedY *= -1;
+            mermaid.style.left = mX + 'px';
+            mermaid.style.top = mY + 'px';
+        }, 30);
+
+        let heartInterval = setInterval(() => {
+            if (!screen.classList.contains('hidden')) {
+                let heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '💙';
+                heart.style.left = (mX + 40) + 'px';
+                heart.style.top = (mY + 40) + 'px';
+                screen.appendChild(heart);
+                setTimeout(() => heart.remove(), 3000);
+            } else {
+                clearInterval(heartInterval);
+                clearInterval(moveAnim);
+                mermaid.remove();
+            }
+        }, 600);
+    }
+</script>
+
+</body>
+</html>
